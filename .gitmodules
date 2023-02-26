@@ -1,0 +1,6 @@
+[submodule "ord"]
+	path = ord
+	url = https://github.com/casey/ord.git
+[submodule "btcd"]
+	path = btcd
+	url = https://github.com/btcsuite/btcd.git

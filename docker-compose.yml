@@ -1,0 +1,48 @@
+services:
+  proxy:
+    build:
+      context: proxy
+    ports:
+      - 127.0.0.1:8334:8334
+    environment:
+       - LISTEN_ADDR=0.0.0.0
+       - LISTEN_PORT=8334
+       - REMOTE_ADDR=btcd
+       - REMOTE_PORT=8334
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1m"
+        max-file: "10"
+  ord:
+    build:
+      context: .
+      dockerfile: ord.Dockerfile
+    ports:
+      - "0.0.0.0:34632:80" # HTTP PORT
+    environment:
+      - RUST_LOG=info
+    volumes:
+      - /mnt/btcdata:/btcdata # Bitcoin node data dir
+      - /mnt/orddata:/orddata # Ord side car data dir
+    command: /usr/src/myapp/target/release/ord --data-dir /orddata --bitcoin-data-dir /btcdata --rpc-url http://proxy:8334 server
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1m"
+        max-file: "10"
+  btcd:
+    build:
+      context: btcd
+    ports:
+      - 8333:8333
+      - 127.0.0.1:8335:8334
+    volumes:
+      - /mnt/btcdata:/btcdata
+      - ./btcd.conf:/config
+    command: btcd -C /config
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1m"
+        max-file: "10"
